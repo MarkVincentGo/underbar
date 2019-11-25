@@ -226,16 +226,60 @@
 
   // Determine whether all of the elements match a truth test.
   _.every = function(collection, iterator) {
+    if (iterator === undefined) {
+      if (_.contains(collection, false)) {
+        return false
+      } else {return true}
+    }
     // TIP: Try re-using reduce() here.
+    return _.reduce(collection, function(accumulator, x) {
+        var test;
+        if (iterator(x)) {
+            test = true
+        } else {
+            test = false
+        }
+      return accumulator && test
+    }, true)
   };
+
+
 
   // Determine whether any of the elements pass a truth test. If no iterator is
   // provided, provide a default one
-  _.some = function(collection, iterator) {
+   _.some = function(collection, iterator) {
     // TIP: There's a very clever way to re-use every() here.
-  };
+    // this is the case for empty array
+    if (collection.length === 0) {
+        return false
+    }
+    
+    // if iterator is undefined
+    if (iterator === undefined) {
+      if (_.contains(collection, true)) {
+        return true
+      } else {
+        return false
+      }
+    }
+    // iterator is defined 
+    var boolVals = _.map(collection, function(x) {
+      if (iterator(x)) {
+        return true
+      } else {
+        return false
+      }
+    })
+
+    if (_.contains(boolVals, true)) {
+      return true
+    } else {
+      return false
+    }
+// will attempt an every approach after module is finished
 
 
+   }
   /**
    * OBJECTS
    * =======
@@ -255,11 +299,30 @@
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj) {
+
+    for (var i = 1; i < arguments.length; i++) {
+//         console.log(arguments[i], i)
+        for (var key in arguments[i]) {
+//         console.log(arguments[i][key])
+        obj[key] = arguments[i][key]
+      }
+    }
+    return obj 
+  
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function(obj) {
+     for (var i = 1; i < arguments.length; i++) {
+//         console.log(arguments[i], i)
+        for (var key in arguments[i]) {
+          if (obj[key] === undefined) {
+              obj[key] = arguments[i][key]
+          }
+      }
+    }
+    return obj 
   };
 
 
@@ -303,7 +366,26 @@
   // already computed the result for the given argument and return that value
   // instead if possible.
   _.memoize = function(func) {
+    //creates an object which keeps track of all the previous runs
+    let cache = {};
+    
+
+    return function() {
+      var result;
+      // create name for object key corresponding to argument
+      var thing = JSON.stringify(arguments)
+
+      if (cache[thing] === undefined) { // if not in storage
+        result = func.apply(this, arguments) // run and store
+        cache[thing] = result
+        return cache[thing]
+      } else { // else, get from storage and return
+      return cache[thing]
+      }
+    }
+
   };
+
 
   // Delays a function for the given number of milliseconds, and then calls
   // it with the arguments supplied.
@@ -312,6 +394,15 @@
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   _.delay = function(func, wait) {
+    
+    var a = arguments[2];
+    var b = arguments[3]
+    //use setTimeout
+    setTimeout(function() {
+      var result = func.call(this, a, b)
+      return result
+    }, wait)
+    
   };
 
 
@@ -326,7 +417,29 @@
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
+    //make a copy of array 
+    var workArr = array.slice();
+    var countArr = []
+    for (var i = 0; i < array.length; i++) {
+      countArr.push(i)
+    }
+    var resultArr = new Array(array.length)
+    // select first element and so on
+    _.each(workArr, function(x) {
+      //make random generator from 0 to array length
+      var randNum = Math.floor(Math.random() * (countArr.length));
+      //if the array spot is empty, put the element there
+      if (resultArr[countArr[randNum]] === undefined) {
+        resultArr[countArr[randNum]] = x
+        //take the index out of countArr
+        countArr.splice(randNum, 1)
+      }
+    // if the array spot is already occupied, move
+    });
+    return resultArr 
   };
+
+  console.log(_.shuffle([1,2,3,4,5,6,7,8,9,0]))
 
 
   /**
